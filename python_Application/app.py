@@ -80,12 +80,12 @@ class Customer(Bank):
             if(self.first_name in self.bankobj.data):
                 self.amount = input("Enter Your amount:- ")
                 
-                print('\ndepositing...............\n')
+                print('\nDepositing ' + str(self.amount)+'....................\n' )
                 
                 self.bankobj.data[self.first_name] += int(self.amount)
                 self.bankobj.write_file()
                 
-                print('\ndeposited...............\n')
+                print('\nDeposited ' + str(self.amount)+'....................\n' )
                 
             else:
                 raise()
@@ -98,13 +98,13 @@ class Customer(Bank):
                 if(self.first_name in self.bankobj.data):
                     self.amount = input("Enter Your amount:- ")
                     if(self.bankobj.data[self.first_name] >=  int(self.amount)):
-                        print('\nwithdrawing...............\n')
+                        print('\Withdrawning ' + str(self.amount)+'....................\n' )
                         
                         
                         self.bankobj.data[self.first_name] -= int(self.amount)
                         self.bankobj.write_file()
                         
-                        print('\nwithdrawn...............\n')
+                        print('\Withdrawn ' + str(self.amount)+'....................\n' )
                     else:
                         print("\nAmount is less in account , can not withdrawn\n")
                     
@@ -112,16 +112,37 @@ class Customer(Bank):
                     raise()
             except:
                 print('\nCustomer , withdraw , User does not Exists\n') 
+    def transfer(self):
+            try:
+                transfer_to = input('Enter name to whom mony is transfered :- ')
+                if(self.first_name in self.bankobj.data and transfer_to in self.bankobj.data):
+                    self.amount = input("Enter Your amount:- ")
+                    if(self.bankobj.data[self.first_name] >=  int(self.amount)):
+                        print('\nTransferring ' + str(self.amount) + " to "+ transfer_to +'....................\n' )
+                        
+                        
+                        self.bankobj.data[self.first_name] -= int(self.amount)
+                        self.bankobj.data[transfer_to] += int(self.amount)
+                        self.bankobj.write_file()
+                        print('\nTransferred ' + str(self.amount) + " to "+ transfer_to +'....................\n' )
+                    else:
+                        print("\nAmount is less in account , can not Transfer \n")
+                    
+                else:   
+                    raise()
+            except:
+                print('\nCustomer , withdraw , User does not Exists\n')
+
 
     def balance(self):
             try:
                 if(self.first_name in self.bankobj.data):
                     
-                    print('\nshowing...............\n')
+                    print('\nshowing balance...............\n')
                     
                     print(self.first_name , "->" , self.bankobj.data[self.first_name] )
                     
-                    print('\nshown...............\n')
+                    print('\n balance shown...............\n')
                     
                 else:
                     raise()
@@ -139,8 +160,9 @@ if __name__ == "__main__":
         print("press 2 to deposite in the Bank Account ")
         print("press 3 to Withdraw from the Bank Account ")
         print("press 4 to Balance from the Bank Account ")
-        print("press 5 to Delelt the account ")
-        print("press 6 to terminate the transactions ")  
+        print("press 5 to Transfer money to the account ")
+        print("press 6 to Delete the account ")
+        print("press 0 to terminate the transactions ")  
         
         option = int(input("\nEnter what operation you want:- "))
         
@@ -180,13 +202,20 @@ if __name__ == "__main__":
         elif (option == 5):
             p1 = Customer()
             try:
-                p1.close_account()
+                p1.transfer()
             
             except:
-                print('some expection in balance')
+                print('some expection in transfer ')
+            continue
+        elif (option == 6):
+            p1 = Customer()
+            try:
+                p1.close_account()
+            except:
+                print('some expection in close account ')
             continue
 
-        elif(option == 6):
+        elif(option == 0):
             print("\nTransaction Terminated\n")
             break
         else:
