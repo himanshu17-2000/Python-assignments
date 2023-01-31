@@ -1,53 +1,195 @@
-import sys 
-import os 
+import sys
+import os
+
 
 class Bank:
 
-    data = dict() 
+    data = dict()
 
-    def read_file(self):
-        file = open(os.path.join(sys.path[0],'data.csv') , mode='r' )
-        f = file.readlines() 
-        
+    def __init__(self):
+        file = open(os.path.join(sys.path[0], 'data.csv'), mode='r')
+        f = file.readlines()
         for i in f:
             temp = i.split(',')
-            Bank.data[temp[0]] = int(temp[1][:len(temp[1]) -1 ])
+            Bank.data[temp[0].lower()] = int(temp[1][:len(temp[1]) - 1])
+
+    def read_file(self):
+        
+        print('\nreading file...............\n')
+        
+        file = open(os.path.join(sys.path[0], 'data.csv'), mode='r')
+        f = file.readlines()
+        for i in f:
+            temp = i.split(',')
+            Bank.data[temp[0].lower()] = int(temp[1][:len(temp[1]) - 1])
         print(Bank.data)
+        
+        print('\nFile read...............\n')
+        
 
     def write_file(self):
-        print(Bank.data) 
+        arr = []
+        
+        print('\nwriting file...............\n')
+        for k, v in Bank.data.items():
+            arr.append(str(k).lower()+','+str(v)+'\n')
+        file = open(os.path.join(sys.path[0], 'data.csv'), mode='w')
+        file.writelines(arr)
+       
+        print('\nfile written...............\n')
+        
+
+       
+
+class Customer(Bank):
+    def __init__(self):
+        Bank.__init__(self)
+        self.first_name = input("Enter Your first_name :- ")
+        self.amount = 0
+        self.bankobj = Bank() 
 
     def open_account(self):
-        # file = open(os.path.join(sys.path[0],'data.csv') , mode='w' )
-        pass 
+        try:
+            if self.first_name not in self.bankobj.data.keys() :
+                
+                print('\nopening account...............\n')
+                
+                self.bankobj.data[str(self.first_name).lower()] = int(self.amount)
+                self.bankobj.write_file()
+                print('\nOpened.................\n')
+                
+            else:
+                 raise()
+        except:
+             
+             print('\nCustomer , OpenAccount , User aleady Exists\n')
+    def close_account(self):
+        
+                
+                print('\nclosing account...............\n')
+                
+                del self.bankobj.data[str(self.first_name).lower()] 
+                self.bankobj.write_file()
+                
+                print('\nclosed.................\n')
+                
+            
+             
+    def deposite(self):
+        try:
+            if(self.first_name in self.bankobj.data):
+                self.amount = input("Enter Your amount:- ")
+                
+                print('\ndepositing...............\n')
+                
+                self.bankobj.data[self.first_name] += int(self.amount)
+                self.bankobj.write_file()
+                
+                print('\ndeposited...............\n')
+                
+            else:
+                raise()
+        except:
+            print('\nCustomer , deposite , User does not Exists\n')       
+            
+    def withdraw(self):
+        
+            try:
+                if(self.first_name in self.bankobj.data):
+                    self.amount = input("Enter Your amount:- ")
+                    if(self.bankobj.data[self.first_name] >=  int(self.amount)):
+                        print('\nwithdrawing...............\n')
+                        
+                        
+                        self.bankobj.data[self.first_name] -= int(self.amount)
+                        self.bankobj.write_file()
+                        
+                        print('\nwithdrawn...............\n')
+                    else:
+                        print("\nAmount is less in account , can not withdrawn\n")
+                    
+                else:   
+                    raise()
+            except:
+                print('\nCustomer , withdraw , User does not Exists\n') 
+
+    def balance(self):
+            try:
+                if(self.first_name in self.bankobj.data):
+                    
+                    print('\nshowing...............\n')
+                    
+                    print(self.first_name , "->" , self.bankobj.data[self.first_name] )
+                    
+                    print('\nshown...............\n')
+                    
+                else:
+                    raise()
+            except:
+                print('\nCustomer , balance , User does not Exists\n')         
 
 if __name__ == "__main__":
-    
-    option = 0 
+
+    option = 0
     obj = Bank()
-    obj.read_file()
-    while(True):
-        print("Welcome to Badhiya Bank Tell me your Requirement")
+    while (True):
+        
+        print("\nWelcome to Badhiya Bank Tell me your Requirement\n")
         print("press 1 to Open the Bank Account ")
         print("press 2 to deposite in the Bank Account ")
         print("press 3 to Withdraw from the Bank Account ")
-        # print("press 4 to Transfer ammount from one to another ") 
-        print("press 5 to terminate the transactions ")
-        option = int(input())
-        try:
-            if(option == 1 ):
-                continue
-            elif(option == 2) :
-                continue
-            elif(option == 3) :
-                continue
-            elif(option == 5 ):
-                print("Transaction Termination")
-                break
-            else:
-                raise('Exception')
-        except:
-            print("Invalid Number Entered")
+        print("press 4 to Balance from the Bank Account ")
+        print("press 5 to Delelt the account ")
+        print("press 6 to terminate the transactions ")  
+        
+        option = int(input("\nEnter what operation you want:- "))
+        
+        if (option == 1):
+            p1 = Customer()
+            try:
+
+                p1.open_account()
+            
+            except:
+                print('some expection in open account')
             continue
 
+        elif (option == 2):
+            p1 = Customer()
+            try:
+                p1.deposite()
+            
+            except:
+                print('some expection in deposite')
+            continue
 
+        elif (option == 3):
+            p1 = Customer()
+            try:
+                p1.withdraw()
+            except:
+                print('some expection in withdraw')
+            continue
+        elif(option == 4):
+            p1 = Customer()
+            try:
+                p1.balance()
+            except:
+                print('some expection in balance')
+            continue
+        elif (option == 5):
+            p1 = Customer()
+            try:
+                p1.close_account()
+            
+            except:
+                print('some expection in balance')
+            continue
+
+        elif(option == 6):
+            print("\nTransaction Terminated\n")
+            break
+        else:
+            continue
+        
+            
