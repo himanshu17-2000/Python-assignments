@@ -15,7 +15,7 @@ class Bank:
 
     def read_file(self):
         
-        print('\nreading file...............\n')
+        print('\nreading file...............\n') 
         
         file = open(os.path.join(sys.path[0], 'data.csv'), mode='r')
         f = file.readlines()
