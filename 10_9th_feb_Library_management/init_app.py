@@ -10,6 +10,6 @@ def init_app():
     app.register_blueprint(api)
     
     db.init_app(app)
-    migrate.init_app(app)
+    migrate.init_app(app ,db)
     jwt.init_app(app)
     return app
