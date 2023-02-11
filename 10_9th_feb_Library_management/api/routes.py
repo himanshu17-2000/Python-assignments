@@ -51,18 +51,19 @@ def register_member():
 def borrow_book():
     boro_book_id = request.json['book_id']
     boro_member_id = request.json['member_id']
-    boro_book_name = request.json['book_name']
+    # boro_book_name = request.json['book_name']
     
     book = Book.query.filter_by(book_id = boro_book_id ).first()
     #=============== Making New Tuple in Transactions =============================
     if(book.book_stock <= 0 ):
          return jsonify({'message' : 'Book Out of stock'}) , 404
+    
     t = Transaction.query.filter_by(book_id = boro_book_id , member_id = boro_member_id , borrowed = True ).first()
     print(t)
     if(t is not None and t.borrowed == True):
          return jsonify({'message' : 'First_return the previouly borrowed book'}) , 404
     
-    Tra = Transaction(book_id = boro_book_id ,member_id = boro_member_id ,book_name = boro_book_name)
+    Tra = Transaction(book_id = boro_book_id ,member_id = boro_member_id ,book_name = book.book_name)
     db.session.add(Tra)
 
     # #============== Decrementing Count of Book by id  and  Inrementing Votes ======
@@ -76,9 +77,9 @@ def borrow_book():
 @api.route('/return' , methods = ['POST'])
 def return_book():
     tra_id = request.json['tra_id']
-    book_id = request.json['book_id']
-    member_id = request.json['member_id']
-    tra=Transaction.query.filter_by(book_id = book_id , member_id = member_id , tra_id= tra_id).first()
+    # book_id = request.json['book_id']
+    # member_id = request.json['member_id']
+    tra=Transaction.query.filter_by(tra_id= tra_id).first()
     # print(tra)
     book = Book.query.filter_by(book_id = tra.book_id).first()
     # print(book)
@@ -92,11 +93,11 @@ def return_book():
     # print(f_date , type(t_date) )
     diff =(t_date - f_date)
     if(diff.days > 14):
-        tra.fine = (diff.days-14)*100
+        tra.fine = (diff.days)*10
     db.session.commit()
     # print("difrence between dates is :-" , str(diff.days) , type(diff.days) ) 
     return jsonify({'message' : 'Thanks for returning the book',
-                    "fine":tra.fine}) , 200
+                    "rent":tra.fine}) , 200
 
 
 
