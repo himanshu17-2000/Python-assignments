@@ -16,6 +16,7 @@ function BookBorrow() {
       member_id: parseInt(bookId),
     };
     var res = await axios.post(`${URL}/borrow`, data);
+    console.log(res.data)
     setmessage(res.data);
     
     setVisible(true);
