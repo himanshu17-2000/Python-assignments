@@ -1,6 +1,6 @@
 from datetime import datetime, date
 from sqlobject import SQLObjectNotFound
-from flask import Blueprint, jsonify ,request
+from flask import Blueprint, jsonify, request
 from models.Book import Book
 from models.Member import Member
 from models.Transaction import Transaction
@@ -12,35 +12,40 @@ api = Blueprint("api", __name__)
 @api.route("/")
 def home():
     try:
-
         args = request.args
         url = "https://hapi-books.p.rapidapi.com/nominees/romance/2020"
-        if(args.to_dict() != {}):
+        if args.to_dict() != {}:
             url = f"https://hapi-books.p.rapidapi.com/nominees/{args['genre']}/{args['year']}"
 
         headers = {
             "X-RapidAPI-Key": "9c254922afmsh6ac51f1b70c0bdep1978f1jsn7f9444b252cf",
-            "X-RapidAPI-Host": "hapi-books.p.rapidapi.com"
+            "X-RapidAPI-Host": "hapi-books.p.rapidapi.com",
         }
-
 
         response = requests.request("GET", url, headers=headers)
 
-        books =  response.json()
+        books = response.json()
         print(books)
-        for book in books :
-             b = Book(book_name = book["name"] ,  book_author = book["author"] ,book_votes = book["votes"])
-    except :
-        return "<h1>Something Went Wrong in Third Party Api or YOur are Filling repeated Values </h1>", 400
+        for book in books:
+            b = Book(
+                book_name=book["name"],
+                book_author=book["author"],
+                book_votes=book["votes"],
+            )
+    except:
+        return (
+            "<h1>Something Went Wrong in Third Party Api or YOur are Filling repeated Values </h1>",
+            400,
+        )
     return "<h1>Himanshu kumar amb </h1>", 200
+
 
 @api.route("/register", methods=["POST"])
 def register_member():
-    name = ''
-    email = ''
+    name = ""
+    email = ""
     phone = None
     try:
-
         name = request.json["name"]
         email = request.json["email"]
         phone = request.json["phone"]
@@ -48,15 +53,19 @@ def register_member():
     except KeyError:
         return jsonify({"message": "Key Error = All values not Available"}), 404
 
-    if (name == "" or email == "" or phone == None):
+    if name == "" or email == "" or phone == None:
         return jsonify({"message": "Please fill all values"}), 400
     mem_id = None
-    single_member = Member.select(
-        Member.q.email == email)  # naming coonvention
+    single_member = Member.select(Member.q.email == email)  # naming coonvention
     if list(single_member) == []:
         mem_id = Member(name=name, email=email, phone=phone).id
-        return jsonify({"message": "member added" ,"mem_id":mem_id}), 200
-    return jsonify({"message": "member already exists" ,"mem_id":list(single_member)[0].id}), 401
+        return jsonify({"message": "member added", "mem_id": mem_id}), 200
+    return (
+        jsonify(
+            {"message": "member already exists", "mem_id": list(single_member)[0].id}
+        ),
+        401,
+    )
 
 
 @api.route("/getmember/<int:_id>", methods=["GET"])
@@ -105,6 +114,9 @@ def delete_member(_id):
     except SQLObjectNotFound:
         return jsonify({"message": "Object Not found"}), 404
     else:
+        pending_tra = list(Transaction.selectBy(member_id=user.id , borrowed=True))
+        if(pending_tra != []):
+            return jsonify({"message": "Can't Revoke member ship please return borrowed book, and pay your rent"}),400 
         user.delete(_id)
         return jsonify({"message": "Member Deleted"}), 200
 
@@ -119,7 +131,7 @@ def borrow_book():
     except KeyError:
         return jsonify({"message": "Key Error = All values not Available"}), 404
 
-    if (boro_book_id == None or boro_member_id == None):
+    if boro_book_id == None or boro_member_id == None:
         return jsonify({"message": "Please fill all values"}), 400
 
     # ================= checking if user id exists ================================
@@ -163,7 +175,7 @@ def return_book():
         tra_id = request.json["tra_id"]
     except KeyError:
         return jsonify({"message": "Key Error = All values not Available"}), 404
-    if (tra_id == None):
+    if tra_id == None:
         return jsonify({"message": "Please fill all values"}), 400
     try:
         temp_tra = Transaction.get(tra_id)
@@ -179,7 +191,7 @@ def return_book():
             jsonify({"message": "Old Record,Book already Returned"}),
             200,
         )
-    
+
     tra = list(Transaction.selectBy(id=tra_id, borrowed=True))[0]
     book = list(Book.selectBy(id=tra.book_id))[0]
     member = list(Member.selectBy(id=tra.member_id))[0]
@@ -187,8 +199,8 @@ def return_book():
     book.set(book_stock=new_book_stock)
     tra.set(borrowed=False)
     f_date = tra.from_date
-    # t_date = datetime.now().date()
-    t_date = date(2023, 2, 28)
+    t_date = datetime.now().date()
+    # t_date = date(2023, 2, 28)
     diff = t_date - f_date
     new_fine = (diff.days) * 10
     new_debt = member.debt + new_fine
@@ -206,10 +218,13 @@ def pay_debt():
         amount = request.json["amount"]
     except KeyError:
         return jsonify({"message": "Key Error = All values not Available"}), 404
-    if(member_id == None and amount == None):
+    if member_id == None and amount == None:
         return jsonify({"message": "Please fill all values"}), 400
     try:
         member = Member.get(member_id)
+        if(member.debt == 0 ):
+            return jsonify({"message": "No Debt left","fine" :member.debt}), 200
+        
     except SQLObjectNotFound:
         return jsonify({"message": "Object Not Found"}), 404
 
@@ -234,6 +249,7 @@ def popular():
             "book_stock": item.book_stock,
             "votes": item.book_votes,
         }
+
     data = list(Book.select())
     arr = sorted(list(map(get_dict, data)), key=lambda x: x["votes"])
     return jsonify(arr[::-1]), 200
@@ -249,6 +265,7 @@ def highpaying():
             "book_stock": item.phone,
             "votes": item.debt,
         }
+
     transactions = list(Transaction.select())
     dic = {}
     for transaction in transactions:
@@ -258,10 +275,16 @@ def highpaying():
             dic[transaction.member_id] += 1
     arr = [(v, k) for k, v in dic.items()]
     arr.sort()
+    print(arr)
     members = []
     for value, key in arr:
-        members.append(Member.get(key))
+        try:
+            members.append(Member.get(key))
+        except:
+            continue
+    print(members)
     return jsonify(list(map(get_dict, members))), 200
+    # return "hell0" , 200
 
 
 @api.route("/books", methods=["GET"])
@@ -282,21 +305,19 @@ def fetchbooks():
 @api.route("/addbook", methods=["POST"])
 def addbook():
     try:
+        name = None
+        author = None
+        stock = None
 
-        name= None
-        author= None
-        stock= None
-        
         try:
             name = request.json["book_name"]
             author = request.json["book_author"]
             stock = request.json["book_stock"]
         except KeyError:
             return jsonify({"message": "Key Error = All values not Available"}), 404
-        
-        if(name == "" or author == "" or stock == None ):
+
+        if name == "" or author == "" or stock == None:
             return jsonify({"message": "Please fill all values"}), 400
-        
 
         prevbook = Book.selectBy(book_name=name, book_author=author)
         book_id = None
@@ -304,13 +325,13 @@ def addbook():
             prev_book = list(prevbook)[0]
             prev_book.book_stock += stock
         else:
-             
             book_id = Book(book_name=name, book_author=author, book_stock=stock).id
-            
+
     except:
         return jsonify({"message": "Something Went Wrong"}), 400
-    
-    return jsonify({"message": "Book Added","book_id":book_id}), 200
+
+    return jsonify({"message": "Book Added", "book_id": book_id}), 200
+
 
 @api.route("/deletebook/<int:_id>", methods=["DELETE"])
 def deletebook(_id):
@@ -381,5 +402,9 @@ def get_book_by_name():
             "book_stock": item.book_stock,
             "votes": item.book_votes,
         }
+
     books = list(book)
     return jsonify(list(map(get_dict, books))), 200
+
+
+
