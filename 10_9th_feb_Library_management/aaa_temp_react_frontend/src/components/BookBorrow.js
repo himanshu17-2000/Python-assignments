@@ -13,8 +13,9 @@ function BookBorrow() {
     e.preventDefault();
     const data = {
       book_id: parseInt(bookId),
-      member_id: parseInt(bookId),
+      member_id: parseInt(memberId),
     };
+    console.log(data)
     var res = await axios.post(`${URL}/borrow`, data);
     console.log(res.data)
     setmessage(res.data);

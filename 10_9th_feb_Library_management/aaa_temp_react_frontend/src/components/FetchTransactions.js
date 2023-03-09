@@ -46,7 +46,7 @@ function FetchTransactions() {
       
       <button style={{marginTop:"3px"}}  className="btn btn-primary" onClick={fetchbook}>Fetch Transactions</button>
       <div>
-        {transactions
+        {transactions.reverse()
           .filter((item) => {
             if (traID === "" && memberID === "" ) return item;
             else if (
@@ -71,6 +71,7 @@ function FetchTransactions() {
                 style={{ background: "#bdbdbd", padding: "5px", margin: "5px" }}
               >
                 <h3>Member_id:{item.member_id}</h3>
+                <h6>Transaction_id:{item.tra_id}</h6>
                 <span>name : {item.book_name} , </span>
                 <span>From : {item.from_date} , </span>
                 <span>fine : {item.fine}/- Rs ,</span>
