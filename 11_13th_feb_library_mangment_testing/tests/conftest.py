@@ -6,10 +6,11 @@ from models.Member import Member
 import json
 @pytest.fixture()
 def app():
-    app  = create_app() 
-    app.config.update({
-        "TESTING": True,
-    })
+    testing = True
+    app  = create_app(testing) 
+    # app.config.update({
+    #     "TESTING": True,
+    # })
     return app 
 
 @pytest.fixture()
